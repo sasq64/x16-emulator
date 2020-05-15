@@ -102,7 +102,7 @@ create_directory_listing(uint8_t *data)
 	*data++ = 255; // "65535"
 	*data++ = 255;
 
-	char *blocks_free = "BLOCKS FREE.";
+	const char *blocks_free = "BLOCKS FREE.";
 	memcpy(data, blocks_free, strlen(blocks_free));
 	data += strlen(blocks_free);
 	*data++ = 0;

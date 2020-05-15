@@ -11,7 +11,7 @@
 #include <SDL.h>
 #include "glue.h"
 
-bool video_init(int window_scale, char *quality);
+bool video_init(int window_scale, const char *quality);
 void video_reset(void);
 bool video_step(float mhz);
 bool video_update(void);

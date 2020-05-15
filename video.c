@@ -162,14 +162,14 @@ video_reset()
 }
 
 bool
-video_init(int window_scale, char *quality)
+video_init(int window_scale, const char *quality)
 {
 	video_reset();
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, quality);
 	SDL_CreateWindowAndRenderer(SCREEN_WIDTH * window_scale, SCREEN_HEIGHT * window_scale, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
 #ifndef __MORPHOS__
-	SDL_SetWindowResizable(window, true);
+	SDL_SetWindowResizable(window, SDL_TRUE);
 #endif
 	SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -1002,7 +1002,7 @@ video_space_read_range(uint8_t* dest, uint32_t address, uint32_t size)
 	if (address >= ADDR_VRAM_START && (address+size) <= ADDR_VRAM_END) {
 		memcpy(dest, &video_ram[address], size);
 	} else {
-		for(int i = 0; i < size; ++i) {
+		for(unsigned i = 0; i < size; ++i) {
 			*dest++ = video_space_read(address + i);
 		}
 	}

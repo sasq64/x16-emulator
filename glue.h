@@ -60,7 +60,7 @@ extern uint8_t keymap;
 
 extern void machine_dump();
 extern void machine_reset();
-extern void machine_paste();
+extern void machine_paste(char *);
 extern void init_audio();
 
 #endif

@@ -71,8 +71,8 @@ typedef struct
 void YM_Create(uint32_t clock);
 
 void YM_init(int rate, int fps);
-void YM_stream_update(uint16_t* stream, int samples);
+void YM_stream_update(uint16_t* stream, unsigned samples);
 
-void YM_write_reg(int r, int v);
+void YM_write_reg(int r, unsigned v);
 uint32_t YM_read_status();
 

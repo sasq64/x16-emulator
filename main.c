@@ -44,7 +44,7 @@ void *emulator_loop(void *param);
 void emscripten_main_loop(void);
 
 // This must match the KERNAL's set!
-char *keymaps[] = {
+const char *keymaps[] = {
 	"en-us",
 	"en-gb",
 	"de",
@@ -83,7 +83,7 @@ gif_recorder_state_t record_gif = RECORD_GIF_DISABLED;
 char *gif_path = NULL;
 uint8_t keymap = 0; // KERNAL's default
 int window_scale = 1;
-char *scale_quality = "best";
+const char *scale_quality = "best";
 char window_title[30];
 int32_t last_perf_update = 0;
 int32_t perf_frame_count = 0;
@@ -397,7 +397,7 @@ void
 usage_keymap()
 {
 	printf("The following keymaps are supported:\n");
-	for (int i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
+	for (unsigned i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
 		printf("\t%s\n", keymaps[i]);
 	}
 	exit(1);
@@ -406,7 +406,7 @@ usage_keymap()
 int
 main(int argc, char **argv)
 {
-	char *rom_filename = "rom.bin";
+	const char *rom_filename = "rom.bin";
 	char rom_path_data[PATH_MAX];
 
 	char *rom_path = rom_path_data;
@@ -468,7 +468,7 @@ main(int argc, char **argv)
 				usage_keymap();
 			}
 			bool found = false;
-			for (int i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
+			for (unsigned i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
 				if (!strcmp(argv[0], keymaps[i])) {
 					found = true;
 					keymap = i;
@@ -765,7 +765,8 @@ main(int argc, char **argv)
 	}
 
 	if (run_geos) {
-		paste_text = "GEOS\r";
+        paste_text = paste_text_data;
+		strcpy(paste_text, "GEOS\r");
 	}
 	if (run_test) {
 		paste_text = paste_text_data;
@@ -1057,10 +1058,10 @@ emulator_loop(void *param)
 				}
 
 				if (run_after_load) {
+                    paste_text = paste_text_data;
 					if (start == 0x0801) {
-						paste_text = "RUN\r";
+						strcpy(paste_text, "RUN\r");
 					} else {
-						paste_text = paste_text_data;
 						snprintf(paste_text, sizeof(paste_text_data), "SYS$%04X\r", start);
 					}
 				}
@@ -1077,12 +1078,15 @@ emulator_loop(void *param)
 			int e = 0;
 
 			if (paste_text[0] == '\\' && paste_text[1] == 'X' && paste_text[2] && paste_text[3]) {
-				uint8_t hi = strtol((char[]){paste_text[2], 0}, NULL, 16);
-				uint8_t lo = strtol((char[]){paste_text[3], 0}, NULL, 16);
+				char temp[2] = {0,0};
+				*temp = paste_text[2];
+				uint8_t hi = strtol(temp, NULL, 16);
+                *temp = paste_text[3];
+				uint8_t lo = strtol(temp, NULL, 16);
 				c = hi << 4 | lo;
 				paste_text += 4;
 			} else {
-				paste_text = utf8_decode(paste_text, &c, &e);
+				paste_text = (char*)utf8_decode((void*)paste_text, &c, &e);
 				c = iso8859_15_from_unicode(c);
 			}
 			if (c && !e) {

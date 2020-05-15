@@ -56,7 +56,7 @@ static void adc() {
     saveaccum(result);
 }
 
-static void and() {
+static void and_() {
     penaltyop = 1;
     value = getvalue();
     result = (uint16_t)a & value;

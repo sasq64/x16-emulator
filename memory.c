@@ -23,7 +23,7 @@ uint8_t ROM[ROM_SIZE];
 void
 memory_init()
 {
-	RAM = calloc(RAM_SIZE, sizeof(uint8_t));
+	RAM = (uint8_t*)calloc(RAM_SIZE, sizeof(uint8_t));
 }
 
 static uint8_t
@@ -199,7 +199,7 @@ emu_write(uint8_t reg, uint8_t value)
 		case 0: debugger_enabled = v; break;
 		case 1: log_video = v; break;
 		case 2: log_keyboard = v; break;
-		case 3: echo_mode = value; break;
+		case 3: echo_mode = (echo_mode_t)value; break;
 		case 4: save_on_exit = v; break;
 		case 5: emu_recorder_set((gif_recorder_command_t) value); break;
 		default: printf("WARN: Invalid register %x\n", DEVICE_EMULATOR + reg);

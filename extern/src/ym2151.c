@@ -998,7 +998,7 @@ void YM_refresh_EG(YM2151Operator * op)
 
 
 /* write a register on YM2151 chip number 'n' */
-void YM_write_reg(int r, int v)
+void YM_write_reg(int r, unsigned v)
 {
     YM2151Operator *op = &oper[ (r&0x07)*4+((r&0x18)>>3) ];
 
@@ -2050,7 +2050,7 @@ void YM_advance()
 *   '**buffers' is table of pointers to the buffers: left and right
 *   'length' is the number of samples that should be generated
 */
-void YM_stream_update(uint16_t* stream, int samples)
+void YM_stream_update(uint16_t* stream, unsigned samples)
 {
     uint32_t i;
     int32_t outl,outr;

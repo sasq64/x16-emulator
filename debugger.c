@@ -30,7 +30,7 @@ static void DEBUGRenderData(int y,int data);
 static int DEBUGRenderRegisters(void);
 static void DEBUGRenderCode(int lines,int initialPC);
 static void DEBUGRenderStack(int bytesCount);
-static void DEBUGRenderCmdLine();
+static void DEBUGRenderCmdLine(int x, int width, int height);
 static bool DEBUGBuildCmdLine(SDL_Keycode key);
 static void DEBUGExecCmd();
 
@@ -284,7 +284,7 @@ static bool DEBUGBuildCmdLine(SDL_Keycode key) {
 	// right now, let's have a rudimentary input: only backspace to delete last char
 	// later, I want a real input line with delete, backspace, left and right cursor
 	// devs like their comfort ;)
-	if(currentLineLen <= sizeof(cmdLine)) {
+	if(currentLineLen <= (int)sizeof(cmdLine)) {
 		if(
 			(key >= SDLK_SPACE && key <= SDLK_AT)
 			||
@@ -467,7 +467,7 @@ static void DEBUGRenderCode(int lines, int initialPC) {
 //
 // *******************************************************************************************
 
-static char *labels[] = { "NV-BDIZC","","","A","X","Y","","BKA","BKO", "PC","SP","","BRK","", "VA","VD0","VD1","VCT", NULL };
+static const char *labels[] = { "NV-BDIZC","","","A","X","Y","","BKA","BKO", "PC","SP","","BRK","", "VA","VD0","VD1","VCT", NULL };
 
 
 static int DEBUGRenderRegisters(void) {

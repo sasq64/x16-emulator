@@ -24,8 +24,8 @@ static void (*optable[256])() = {
 /*        |  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  A  |  B  |  C  |  D  |  E  |  F  |     */
 /* 0 */      brk,  ora,  nop,  nop,  tsb,  ora,  asl,  nop,  php,  ora,  asl,  nop,  tsb,  ora,  asl,  nop, /* 0 */
 /* 1 */      bpl,  ora,  ora,  nop,  trb,  ora,  asl,  nop,  clc,  ora,  inc,  nop,  trb,  ora,  asl,  nop, /* 1 */
-/* 2 */      jsr,  and,  nop,  nop,  bit,  and,  rol,  nop,  plp,  and,  rol,  nop,  bit,  and,  rol,  nop, /* 2 */
-/* 3 */      bmi,  and,  and,  nop,  bit,  and,  rol,  nop,  sec,  and,  dec,  nop,  bit,  and,  rol,  nop, /* 3 */
+/* 2 */      jsr,  and_,  nop,  nop,  bit,  and_,  rol,  nop,  plp,  and_,  rol,  nop,  bit,  and_,  rol,  nop, /* 2 */
+/* 3 */      bmi,  and_,  and_,  nop,  bit,  and_,  rol,  nop,  sec,  and_,  dec,  nop,  bit,  and_,  rol,  nop, /* 3 */
 /* 4 */      rti,  eor,  nop,  nop,  nop,  eor,  lsr,  nop,  pha,  eor,  lsr,  nop,  jmp,  eor,  lsr,  nop, /* 4 */
 /* 5 */      bvc,  eor,  eor,  nop,  nop,  eor,  lsr,  nop,  cli,  eor,  phy,  nop,  nop,  eor,  lsr,  nop, /* 5 */
 /* 6 */      rts,  adc,  nop,  nop,  stz,  adc,  ror,  nop,  pla,  adc,  ror,  nop,  jmp,  adc,  ror,  nop, /* 6 */

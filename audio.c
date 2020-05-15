@@ -61,9 +61,9 @@ audio_init(const char *dev_name, int num_audio_buffers)
 	}
 
 	// Allocate audio buffers
-	buffers = malloc(num_bufs * sizeof(*buffers));
+	buffers = (int16_t**)malloc(num_bufs * sizeof(*buffers));
 	for (int i = 0; i < num_bufs; i++) {
-		buffers[i] = malloc(2 * SAMPLES_PER_BUFFER * sizeof(buffers[0][0]));
+		buffers[i] = (int16_t*)malloc(2 * SAMPLES_PER_BUFFER * sizeof(buffers[0][0]));
 	}
 
 	SDL_AudioSpec desired;

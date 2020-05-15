@@ -147,12 +147,20 @@ extern void write6502(uint16_t address, uint8_t value);
 #include "support.h"
 #include "modes.h"
 
-static void (*addrtable[256])();
-static void (*optable[256])();
+//static void (*addrtable[256])();
+//static void (*optable[256])();
+
+static uint16_t getvalue();
+__attribute__((unused)) static uint16_t getvalue16();
+static void putvalue(uint16_t saveval);
+
+#include "instructions.h"
+#include "65c02.h"
+#include "tables.h"
 
 static uint16_t getvalue() {
     if (addrtable[opcode] == acc) return((uint16_t)a);
-        else return((uint16_t)read6502(ea));
+    else return((uint16_t)read6502(ea));
 }
 
 __attribute__((unused)) static uint16_t getvalue16() {
@@ -161,12 +169,8 @@ __attribute__((unused)) static uint16_t getvalue16() {
 
 static void putvalue(uint16_t saveval) {
     if (addrtable[opcode] == acc) a = (uint8_t)(saveval & 0x00FF);
-        else write6502(ea, (saveval & 0x00FF));
+    else write6502(ea, (saveval & 0x00FF));
 }
-
-#include "instructions.h"
-#include "65c02.h"
-#include "tables.h"
 
 void nmi6502() {
     push16(pc);
@@ -226,7 +230,7 @@ void step6502() {
 
 void hookexternal(void *funcptr) {
     if (funcptr != (void *)NULL) {
-        loopexternal = funcptr;
+        loopexternal = (void(*)())funcptr;
         callexternal = 1;
     } else callexternal = 0;
 }
