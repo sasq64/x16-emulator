@@ -3,8 +3,8 @@
 // All rights reserved. License: 2-clause BSD
 
 #ifndef __APPLE__
-#define _XOPEN_SOURCE   600
-#define _POSIX_C_SOURCE 1
+#	define _XOPEN_SOURCE 600
+#	define _POSIX_C_SOURCE 1
 #endif
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <limits.h>
 #ifdef __MINGW32__
-#include <ctype.h>
+#	include <ctype.h>
 #endif
 #include "cpu/fake6502.h"
 #include "disasm.h"
@@ -36,122 +36,123 @@
 #include "audio.h"
 
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <pthread.h>
+#	include <emscripten.h>
+#	include <pthread.h>
 #endif
 
 void *emulator_loop(void *param);
-void emscripten_main_loop(void);
+void  emscripten_main_loop(void);
 
 // This must match the KERNAL's set!
 const char *keymaps[] = {
-	"en-us",
-	"en-gb",
-	"de",
-	"nordic",
-	"it",
-	"pl",
-	"hu",
-	"es",
-	"fr",
-	"de-ch",
-	"fr-be",
-	"pt-br",
+    "en-us",
+    "en-gb",
+    "de",
+    "nordic",
+    "it",
+    "pl",
+    "hu",
+    "es",
+    "fr",
+    "de-ch",
+    "fr-be",
+    "pt-br",
 };
 
 #ifdef PERFSTAT
 uint32_t stat[65536];
 #endif
 
-bool debugger_enabled = false;
-char *paste_text = NULL;
-char paste_text_data[65536];
-bool pasting_bas = false;
+bool  debugger_enabled = false;
+char *paste_text       = NULL;
+char  paste_text_data[65536];
+bool  pasting_bas = false;
+int benchmark_frames = 0;
 
 uint16_t num_ram_banks = 64; // 512 KB default
 
-bool log_video = false;
-bool log_speed = false;
-bool log_keyboard = false;
-bool dump_cpu = false;
-bool dump_ram = true;
-bool dump_bank = true;
-bool dump_vram = false;
-echo_mode_t echo_mode;
-bool save_on_exit = true;
-gif_recorder_state_t record_gif = RECORD_GIF_DISABLED;
-char *gif_path = NULL;
-uint8_t keymap = 0; // KERNAL's default
-int window_scale = 1;
-const char *scale_quality = "best";
-char window_title[30];
-int32_t last_perf_update = 0;
-int32_t perf_frame_count = 0;
+bool                 log_video    = false;
+bool                 log_speed    = false;
+bool                 log_keyboard = false;
+bool                 dump_cpu     = false;
+bool                 dump_ram     = true;
+bool                 dump_bank    = true;
+bool                 dump_vram    = false;
+echo_mode_t          echo_mode;
+bool                 save_on_exit  = true;
+gif_recorder_state_t record_gif    = RECORD_GIF_DISABLED;
+char *               gif_path      = NULL;
+uint8_t              keymap        = 0; // KERNAL's default
+int                  window_scale  = 1;
+const char *         scale_quality = "best";
+char                 window_title[30];
+int32_t              last_perf_update = 0;
+int32_t              perf_frame_count = 0;
 
 #ifdef TRACE
-bool trace_mode = false;
+bool     trace_mode    = false;
 uint16_t trace_address = 0;
 #endif
 
-int instruction_counter;
-SDL_RWops *prg_file ;
-int prg_override_start = -1;
-bool run_after_load = false;
+int        instruction_counter;
+SDL_RWops *prg_file;
+int        prg_override_start = -1;
+bool       run_after_load     = false;
 
 #ifdef TRACE
-#include "rom_labels.h"
+#	include "rom_labels.h"
 char *
 label_for_address(uint16_t address)
 {
 	uint16_t *addresses;
-	char **labels;
-	int count;
+	char **   labels;
+	int       count;
 	switch (memory_get_rom_bank()) {
 		case 0:
 			addresses = addresses_bank0;
-			labels = labels_bank0;
-			count = sizeof(addresses_bank0) / sizeof(uint16_t);
+			labels    = labels_bank0;
+			count     = sizeof(addresses_bank0) / sizeof(uint16_t);
 			break;
 		case 1:
 			addresses = addresses_bank1;
-			labels = labels_bank1;
-			count = sizeof(addresses_bank1) / sizeof(uint16_t);
+			labels    = labels_bank1;
+			count     = sizeof(addresses_bank1) / sizeof(uint16_t);
 			break;
 		case 2:
 			addresses = addresses_bank2;
-			labels = labels_bank2;
-			count = sizeof(addresses_bank2) / sizeof(uint16_t);
+			labels    = labels_bank2;
+			count     = sizeof(addresses_bank2) / sizeof(uint16_t);
 			break;
 		case 3:
 			addresses = addresses_bank3;
-			labels = labels_bank3;
-			count = sizeof(addresses_bank3) / sizeof(uint16_t);
+			labels    = labels_bank3;
+			count     = sizeof(addresses_bank3) / sizeof(uint16_t);
 			break;
 		case 4:
 			addresses = addresses_bank4;
-			labels = labels_bank4;
-			count = sizeof(addresses_bank4) / sizeof(uint16_t);
+			labels    = labels_bank4;
+			count     = sizeof(addresses_bank4) / sizeof(uint16_t);
 			break;
 		case 5:
 			addresses = addresses_bank5;
-			labels = labels_bank5;
-			count = sizeof(addresses_bank5) / sizeof(uint16_t);
+			labels    = labels_bank5;
+			count     = sizeof(addresses_bank5) / sizeof(uint16_t);
 			break;
 		case 6:
 			addresses = addresses_bank6;
-			labels = labels_bank6;
-			count = sizeof(addresses_bank6) / sizeof(uint16_t);
+			labels    = labels_bank6;
+			count     = sizeof(addresses_bank6) / sizeof(uint16_t);
 			break;
-#if 0
+#	if 0
 		case 7:
 			addresses = addresses_bank7;
 			labels = labels_bank7;
 			count = sizeof(addresses_bank7) / sizeof(uint16_t);
 			break;
-#endif
+#	endif
 		default:
 			addresses = NULL;
-			labels = NULL;
+			labels    = NULL;
 	}
 
 	if (!addresses) {
@@ -170,7 +171,7 @@ label_for_address(uint16_t address)
 void
 machine_dump()
 {
-	int index = 0;
+	int  index = 0;
 	char filename[22];
 	for (;;) {
 		if (!index) {
@@ -222,7 +223,7 @@ void
 machine_paste(char *s)
 {
 	if (s) {
-		paste_text = s;
+		paste_text  = s;
 		pasting_bas = true;
 	}
 }
@@ -316,9 +317,9 @@ static bool
 is_kernal()
 {
 	return read6502(0xfff6) == 'M' && // only for KERNAL
-			read6502(0xfff7) == 'I' &&
-			read6502(0xfff8) == 'S' &&
-			read6502(0xfff9) == 'T';
+	       read6502(0xfff7) == 'I' &&
+	       read6502(0xfff8) == 'S' &&
+	       read6502(0xfff9) == 'T';
 }
 
 static void
@@ -397,7 +398,7 @@ void
 usage_keymap()
 {
 	printf("The following keymaps are supported:\n");
-	for (unsigned i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
+	for (unsigned i = 0; i < sizeof(keymaps) / sizeof(*keymaps); i++) {
 		printf("\t%s\n", keymaps[i]);
 	}
 	exit(1);
@@ -407,16 +408,16 @@ int
 main(int argc, char **argv)
 {
 	const char *rom_filename = "rom.bin";
-	char rom_path_data[PATH_MAX];
+	char        rom_path_data[PATH_MAX];
 
-	char *rom_path = rom_path_data;
-	char *prg_path = NULL;
-	char *bas_path = NULL;
-	char *sdcard_path = NULL;
-	bool run_geos = false;
-	bool run_test = false;
-	int test_number = 0;
-	int audio_buffers = 8;
+	char *rom_path      = rom_path_data;
+	char *prg_path      = NULL;
+	char *bas_path      = NULL;
+	char *sdcard_path   = NULL;
+	bool  run_geos      = false;
+	bool  run_test      = false;
+	int   test_number   = 0;
+	int   audio_buffers = 8;
 
 	const char *audio_dev_name = NULL;
 
@@ -448,17 +449,17 @@ main(int argc, char **argv)
 			if (!argc || argv[0][0] == '-') {
 				usage();
 			}
-			int kb = atoi(argv[0]);
+			int  kb    = atoi(argv[0]);
 			bool found = false;
 			for (int cmp = 8; cmp <= 2048; cmp *= 2) {
-				if (kb == cmp)  {
+				if (kb == cmp) {
 					found = true;
 				}
 			}
 			if (!found) {
 				usage();
 			}
-			num_ram_banks = kb /8;
+			num_ram_banks = kb / 8;
 			argc--;
 			argv++;
 		} else if (!strcmp(argv[0], "-keymap")) {
@@ -468,9 +469,9 @@ main(int argc, char **argv)
 				usage_keymap();
 			}
 			bool found = false;
-			for (unsigned i = 0; i < sizeof(keymaps)/sizeof(*keymaps); i++) {
+			for (unsigned i = 0; i < sizeof(keymaps) / sizeof(*keymaps); i++) {
 				if (!strcmp(argv[0], keymaps[i])) {
-					found = true;
+					found  = true;
 					keymap = i;
 				}
 			}
@@ -512,7 +513,7 @@ main(int argc, char **argv)
 				usage();
 			}
 			test_number = atoi(argv[0]);
-			run_test = true;
+			run_test    = true;
 			argc--;
 			argv++;
 		} else if (!strcmp(argv[0], "-sdcard")) {
@@ -531,7 +532,7 @@ main(int argc, char **argv)
 				if (!strcmp(argv[0], "raw")) {
 					echo_mode = ECHO_MODE_RAW;
 				} else if (!strcmp(argv[0], "iso")) {
-						echo_mode = ECHO_MODE_ISO;
+					echo_mode = ECHO_MODE_ISO;
 				} else {
 					usage();
 				}
@@ -569,8 +570,8 @@ main(int argc, char **argv)
 			if (!argc || argv[0][0] == '-') {
 				usage();
 			}
-			dump_cpu = false;
-			dump_ram = false;
+			dump_cpu  = false;
+			dump_ram  = false;
 			dump_bank = false;
 			dump_vram = false;
 			for (char *p = argv[0]; *p; p++) {
@@ -626,14 +627,14 @@ main(int argc, char **argv)
 				argv++;
 			}
 
-		} else if (!strcmp(argv[0], "-joy2")){
+		} else if (!strcmp(argv[0], "-joy2")) {
 			argc--;
 			argv++;
-			if (!strcmp(argv[0], "NES")){
+			if (!strcmp(argv[0], "NES")) {
 				joy2_mode = NES;
 				argc--;
 				argv++;
-			} else if (!strcmp(argv[0], "SNES")){
+			} else if (!strcmp(argv[0], "SNES")) {
 				joy2_mode = SNES;
 				argc--;
 				argv++;
@@ -643,37 +644,37 @@ main(int argc, char **argv)
 			argc--;
 			argv++;
 			if (argc && argv[0][0] != '-') {
-				trace_mode = false;
+				trace_mode    = false;
 				trace_address = (uint16_t)strtol(argv[0], NULL, 16);
 				argc--;
 				argv++;
 			} else {
-				trace_mode = true;
+				trace_mode    = true;
 				trace_address = 0;
 			}
 #endif
 		} else if (!strcmp(argv[0], "-scale")) {
 			argc--;
 			argv++;
-			if(!argc || argv[0][0] == '-') {
+			if (!argc || argv[0][0] == '-') {
 				usage();
 			}
-			for(char *p = argv[0]; *p; p++) {
-				switch(tolower(*p)) {
-				case '1':
-					window_scale = 1;
-					break;
-				case '2':
-					window_scale = 2;
-					break;
-				case '3':
-					window_scale = 3;
-					break;
-				case '4':
-					window_scale = 4;
-					break;
-				default:
-					usage();
+			for (char *p = argv[0]; *p; p++) {
+				switch (tolower(*p)) {
+					case '1':
+						window_scale = 1;
+						break;
+					case '2':
+						window_scale = 2;
+						break;
+					case '3':
+						window_scale = 3;
+						break;
+					case '4':
+						window_scale = 4;
+						break;
+					default:
+						usage();
 				}
 			}
 			argc--;
@@ -681,12 +682,12 @@ main(int argc, char **argv)
 		} else if (!strcmp(argv[0], "-quality")) {
 			argc--;
 			argv++;
-			if(!argc || argv[0][0] == '-') {
+			if (!argc || argv[0][0] == '-') {
 				usage();
 			}
 			if (!strcmp(argv[0], "nearest") ||
-				!strcmp(argv[0], "linear") ||
-				!strcmp(argv[0], "best")) {
+			    !strcmp(argv[0], "linear") ||
+			    !strcmp(argv[0], "best")) {
 				scale_quality = argv[0];
 			} else {
 				usage();
@@ -711,6 +712,10 @@ main(int argc, char **argv)
 			audio_buffers = (int)strtol(argv[0], NULL, 10);
 			argc--;
 			argv++;
+		} else if (!strcmp(argv[0], "-bench")) {
+			argc--;
+			argv++;
+			benchmark_frames = 1000;
 		} else {
 			usage();
 		}
@@ -738,7 +743,7 @@ main(int argc, char **argv)
 		char *comma = strchr(prg_path, ',');
 		if (comma) {
 			prg_override_start = (uint16_t)strtol(comma + 1, NULL, 16);
-			*comma = 0;
+			*comma             = 0;
 		}
 
 		prg_file = SDL_RWFromFile(prg_path, "rb");
@@ -754,7 +759,7 @@ main(int argc, char **argv)
 			printf("Cannot open %s!\n", bas_path);
 			exit(1);
 		}
-		paste_text = paste_text_data;
+		paste_text        = paste_text_data;
 		size_t paste_size = SDL_RWread(bas_file, paste_text, 1, sizeof(paste_text_data) - 1);
 		if (run_after_load) {
 			strncpy(paste_text + paste_size, "\rRUN\r", sizeof(paste_text_data) - paste_size);
@@ -765,7 +770,7 @@ main(int argc, char **argv)
 	}
 
 	if (run_geos) {
-        paste_text = paste_text_data;
+		paste_text = paste_text_data;
 		strcpy(paste_text, "GEOS\r");
 	}
 	if (run_test) {
@@ -797,7 +802,7 @@ main(int argc, char **argv)
 	SDL_Quit();
 
 #ifdef PERFSTAT
-	for (int pc = 0xc000; pc < sizeof(stat)/sizeof(*stat); pc++) {
+	for (int pc = 0xc000; pc < sizeof(stat) / sizeof(*stat); pc++) {
 		if (stat[pc] == 0) {
 			continue;
 		}
@@ -805,8 +810,8 @@ main(int argc, char **argv)
 		if (!label) {
 			continue;
 		}
-		char *original_label = label;
-		uint16_t pc2 = pc;
+		char *   original_label = label;
+		uint16_t pc2            = pc;
 		if (label[0] == '@') {
 			label = NULL;
 			while (!label || label[0] == '@') {
@@ -814,8 +819,8 @@ main(int argc, char **argv)
 				label = label_for_address(pc2);
 			}
 		}
-		printf("%d\t $%04X %s+%d", stat[pc], pc, label, pc-pc2);
-		if (pc-pc2 != 0) {
+		printf("%d\t $%04X %s+%d", stat[pc], pc, label, pc - pc2);
+		if (pc - pc2 != 0) {
 			printf(" (%s)", original_label);
 		}
 		printf("\n");
@@ -826,29 +831,33 @@ main(int argc, char **argv)
 }
 
 void
-emscripten_main_loop(void) {
+emscripten_main_loop(void)
+{
 	emulator_loop(NULL);
 }
 
-
-void*
+void *
 emulator_loop(void *param)
 {
+	int startTime = SDL_GetTicks();
+
 	for (;;) {
 
 		if (debugger_enabled) {
 			int dbgCmd = DEBUGGetCurrentStatus();
-			if (dbgCmd > 0) continue;
-			if (dbgCmd < 0) break;
+			if (dbgCmd > 0)
+				continue;
+			if (dbgCmd < 0)
+				break;
 		}
 
 #ifdef PERFSTAT
 
-//		if (memory_get_rom_bank() == 3) {
-//			stat[pc]++;
-//		}
+		//		if (memory_get_rom_bank() == 3) {
+		//			stat[pc]++;
+		//		}
 		if (memory_get_rom_bank() == 3) {
-			static uint8_t old_sp;
+			static uint8_t  old_sp;
 			static uint16_t base_pc;
 			if (sp < old_sp) {
 				base_pc = pc;
@@ -866,8 +875,8 @@ emulator_loop(void *param)
 			//printf("\t\t\t\t");
 			printf("[%6d] ", instruction_counter);
 
-			char *label = label_for_address(pc);
-			int label_len = label ? strlen(label) : 0;
+			char *label     = label_for_address(pc);
+			int   label_len = label ? strlen(label) : 0;
 			if (label) {
 				printf("%s", label);
 			}
@@ -876,7 +885,7 @@ emulator_loop(void *param)
 			}
 			printf(" %02x:.,%04x ", memory_get_rom_bank(), pc);
 			char disasm_line[15];
-			int len = disasm(pc, RAM, disasm_line, sizeof(disasm_line), false, 0);
+			int  len = disasm(pc, RAM, disasm_line, sizeof(disasm_line), false, 0);
 			for (int i = 0; i < len; i++) {
 				printf("%02x ", read6502(pc + i));
 			}
@@ -893,7 +902,7 @@ emulator_loop(void *param)
 				printf("%c", (status & (1 << i)) ? "czidb.vn"[i] : '-');
 			}
 
-#if 0
+#	if 0
 			printf(" ---");
 			for (int i = 0; i < 6; i++) {
 				printf(" r%i:%04x", i, RAM[2 + i*2] | RAM[3 + i*2] << 8);
@@ -910,7 +919,7 @@ emulator_loop(void *param)
 //			for (int i = 0; i < 10; i++) {
 //				printf("%02x:", RAM[0xa041+i]);
 //			}
-#endif
+#	endif
 
 			printf("\n");
 		}
@@ -930,8 +939,8 @@ emulator_loop(void *param)
 
 		uint32_t old_clockticks6502 = clockticks6502;
 		step6502();
-		uint8_t clocks = clockticks6502 - old_clockticks6502;
-		bool new_frame = false;
+		uint8_t clocks    = clockticks6502 - old_clockticks6502;
+		bool    new_frame = false;
 		for (uint8_t i = 0; i < clocks; i++) {
 			ps2_step(0);
 			ps2_step(1);
@@ -945,41 +954,51 @@ emulator_loop(void *param)
 		instruction_counter++;
 
 		if (new_frame) {
-			if (!video_update()) {
-				break;
-			}
+            static int frames = 0;
+            frames++;
 
-			static int frames = 0;
-			frames++;
-			int32_t sdlTicks = SDL_GetTicks();
-			int32_t diff_time = 1000 * frames / 60 - sdlTicks;
-			if (diff_time > 0) {
-				usleep(1000 * diff_time);
-			}
-
-			if (sdlTicks - last_perf_update > 5000) {
-				int32_t frameCount = frames - perf_frame_count;
-				int perf = frameCount / 3;
-
-				if (perf < 100) {
-					sprintf(window_title, "Commander X16 (%d%%)", perf);
-					video_update_title(window_title);
-				} else {
-					video_update_title("Commander X16");
+			if(benchmark_frames > 0) {
+				if(frames == benchmark_frames) {
+					int t = SDL_GetTicks() - startTime;
+					printf("Ran %d frames for %dms = %d%% speed\n", benchmark_frames, t, (100000/60)/(t/benchmark_frames));
+					exit(0);
 				}
 
-				perf_frame_count = frames;
-				last_perf_update = sdlTicks;
-			}
+			} else {
+				if (!video_update()) {
+					break;
+				}
 
-			if (log_speed) {
-				float frames_behind = -((float)diff_time / 16.666666);
-				int load = (int)((1 + frames_behind) * 100);
-				printf("Load: %d%%\n", load > 100 ? 100 : load);
+				int32_t sdlTicks  = SDL_GetTicks();
+				int32_t diff_time = 1000 * frames / 60 - sdlTicks;
+				if (diff_time > 0) {
+					usleep(1000 * diff_time);
+				}
 
-				if ((int)frames_behind > 0) {
-					printf("Rendering is behind %d frames.\n", -(int)frames_behind);
-				} else {
+				if (sdlTicks - last_perf_update > 5000) {
+					int32_t frameCount = frames - perf_frame_count;
+					int     perf       = frameCount / 3;
+
+					if (perf < 100) {
+						sprintf(window_title, "Commander X16 (%d%%)", perf);
+						video_update_title(window_title);
+					} else {
+						video_update_title("Commander X16");
+					}
+
+					perf_frame_count = frames;
+					last_perf_update = sdlTicks;
+				}
+
+				if (log_speed) {
+					float frames_behind = -((float)diff_time / 16.666666);
+					int   load          = (int)((1 + frames_behind) * 100);
+					printf("Load: %d%%\n", load > 100 ? 100 : load);
+
+					if ((int)frames_behind > 0) {
+						printf("Rendering is behind %d frames.\n", -(int)frames_behind);
+					} else {
+					}
 				}
 			}
 #ifdef __EMSCRIPTEN__
@@ -990,7 +1009,7 @@ emulator_loop(void *param)
 
 		if (video_get_irq_out()) {
 			if (!(status & 4)) {
-//				printf("IRQ!\n");
+				//				printf("IRQ!\n");
 				irq6502();
 			}
 		}
@@ -1040,25 +1059,25 @@ emulator_loop(void *param)
 			// as soon as BASIC starts reading a line...
 			if (prg_file) {
 				// ...inject the app into RAM
-				uint8_t start_lo = SDL_ReadU8(prg_file);
-				uint8_t start_hi = SDL_ReadU8(prg_file);
+				uint8_t  start_lo = SDL_ReadU8(prg_file);
+				uint8_t  start_hi = SDL_ReadU8(prg_file);
 				uint16_t start;
 				if (prg_override_start >= 0) {
 					start = prg_override_start;
 				} else {
 					start = start_hi << 8 | start_lo;
 				}
-				uint16_t end = start + SDL_RWread(prg_file, RAM + start, 1, 65536-start);
+				uint16_t end = start + SDL_RWread(prg_file, RAM + start, 1, 65536 - start);
 				SDL_RWclose(prg_file);
 				prg_file = NULL;
 				if (start == 0x0801) {
 					// set start of variables
-					RAM[VARTAB] = end & 0xff;
+					RAM[VARTAB]     = end & 0xff;
 					RAM[VARTAB + 1] = end >> 8;
 				}
 
 				if (run_after_load) {
-                    paste_text = paste_text_data;
+					paste_text = paste_text_data;
 					if (start == 0x0801) {
 						strcpy(paste_text, "RUN\r");
 					} else {
@@ -1075,26 +1094,26 @@ emulator_loop(void *param)
 
 		while (pasting_bas && RAM[NDX] < 10) {
 			uint32_t c;
-			int e = 0;
+			int      e = 0;
 
 			if (paste_text[0] == '\\' && paste_text[1] == 'X' && paste_text[2] && paste_text[3]) {
-				char temp[2] = {0,0};
-				*temp = paste_text[2];
-				uint8_t hi = strtol(temp, NULL, 16);
-                *temp = paste_text[3];
-				uint8_t lo = strtol(temp, NULL, 16);
-				c = hi << 4 | lo;
+				char temp[2] = {0, 0};
+				*temp        = paste_text[2];
+				uint8_t hi   = strtol(temp, NULL, 16);
+				*temp        = paste_text[3];
+				uint8_t lo   = strtol(temp, NULL, 16);
+				c            = hi << 4 | lo;
 				paste_text += 4;
 			} else {
-				paste_text = (char*)utf8_decode((void*)paste_text, &c, &e);
-				c = iso8859_15_from_unicode(c);
+				paste_text = (char *)utf8_decode((void *)paste_text, &c, &e);
+				c          = iso8859_15_from_unicode(c);
 			}
 			if (c && !e) {
 				RAM[KEYD + RAM[NDX]] = c;
 				RAM[NDX]++;
 			} else {
 				pasting_bas = false;
-				paste_text = NULL;
+				paste_text  = NULL;
 			}
 		}
 	}

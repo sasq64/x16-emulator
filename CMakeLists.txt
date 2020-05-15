@@ -12,5 +12,6 @@ SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES LANGUAGE CXX)
 
 add_executable(x16-emu ${SOURCES})
 target_compile_options(x16-emu PRIVATE -Wall -std=c++17)
+target_compile_definitions(x16-emu PRIVATE CPP_OPT)
 target_include_directories(x16-emu PRIVATE extern/include extern/src ${SDL2_INCLUDE_DIRS})
 target_link_libraries(x16-emu PRIVATE m ${SDL2_LIBRARIES})
