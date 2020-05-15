@@ -960,7 +960,7 @@ emulator_loop(void *param)
 			if(benchmark_frames > 0) {
 				if(frames == benchmark_frames) {
 					int t = SDL_GetTicks() - startTime;
-					printf("Ran %d frames for %dms = %d%% speed\n", benchmark_frames, t, (100000/60)/(t/benchmark_frames));
+					printf("Ran %d frames for %dms = %d%% speed\n", benchmark_frames, t, (100000/60)*benchmark_frames/t);
 					exit(0);
 				}
 
