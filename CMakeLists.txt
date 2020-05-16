@@ -1,6 +1,10 @@
 project(x16-emu)
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(SDL2 REQUIRED)
 
 set(SOURCES cpu/fake6502.c memory.c disasm.c video.c ps2.c via.c loadsave.c
@@ -11,7 +15,7 @@ set(SOURCES cpu/fake6502.c memory.c disasm.c video.c ps2.c via.c loadsave.c
 SET_SOURCE_FILES_PROPERTIES(${SOURCES} PROPERTIES LANGUAGE CXX)
 
 add_executable(x16-emu ${SOURCES})
-target_compile_options(x16-emu PRIVATE -Wall -std=c++17)
+target_compile_options(x16-emu PRIVATE -Wall)
 target_compile_definitions(x16-emu PRIVATE CPP_OPT)
 target_include_directories(x16-emu PRIVATE extern/include extern/src ${SDL2_INCLUDE_DIRS})
 target_link_libraries(x16-emu PRIVATE m ${SDL2_LIBRARIES})
