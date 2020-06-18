@@ -131,6 +131,34 @@
 uint16_t pc;
 uint8_t sp, a, x, y, status;
 
+enum {A, X, Y, SR, SP, PC};
+
+
+unsigned readReg(int reg) {
+
+	switch(reg) {
+		case A: return a;
+        case X: return x;
+        case Y: return y;
+        case SR: return status;
+        case PC: return pc;
+        case SP: return sp;
+	}
+	return -1;
+}
+
+void writeReg(int reg, unsigned val)
+{
+    switch(reg) {
+        case A: a = val; return;
+        case X: x = val; return;
+        case Y: y = val; return;
+        case SR: status = val; return;
+        case PC: pc = val; return;
+        case SP: sp = val; return;
+    }
+}
+
 
 //helper variables
 uint32_t instructions = 0; //keep track of total instructions executed

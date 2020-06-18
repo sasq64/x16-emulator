@@ -1200,8 +1200,7 @@ uint8_t video_read(uint8_t reg, bool debugOn) {
 		case 0x05: return (io_dcsel << 1) | io_addrsel;
 		case 0x06: return ((irq_line & 1) << 7) | (ien & 0xF);
 		case 0x07: return isr | (pcm_is_fifo_almost_empty() ? 8 : 0);
-		//case 0x08: return irq_line & 0xFF;
-        case 0x08: return (scan_pos_y - ((reg_composer[0] & 2) ? NTSC_FRONT_PORCH_Y : VGA_FRONT_PORCH_Y)) & 0xff;
+		case 0x08: return irq_line & 0xFF;
 
 		case 0x09:
 		case 0x0A:

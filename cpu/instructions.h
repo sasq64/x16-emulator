@@ -140,15 +140,18 @@ static void bpl() {
     }
 }
 
+int callBreakFunction(int what);
+
 static void brk() {
-    pc++;
-
-
-    push16(pc); //push next instruction address onto stack
-    push8(status | FLAG_BREAK); //push CPU status to stack
-    setinterrupt(); //set interrupt flag
-    cleardecimal();       // clear decimal flag (65C02 change)
-    pc = (uint16_t)read6502(0xFFFE) | ((uint16_t)read6502(0xFFFF) << 8);
+	uint8_t what = read6502(pc++);
+	if(callBreakFunction(what)) {
+	} else {
+		push16(pc);                 //push next instruction address onto stack
+		push8(status | FLAG_BREAK); //push CPU status to stack
+		setinterrupt();             //set interrupt flag
+		cleardecimal();             // clear decimal flag (65C02 change)
+		pc = (uint16_t)read6502(0xFFFE) | ((uint16_t)read6502(0xFFFF) << 8);
+	}
 }
 
 static void bvc() {

@@ -66,8 +66,8 @@ uint32_t stat[65536];
 bool  debugger_enabled = false;
 char *paste_text       = NULL;
 char  paste_text_data[65536];
-bool  pasting_bas = false;
-int benchmark_frames = 0;
+bool  pasting_bas      = false;
+int   benchmark_frames = 0;
 
 uint16_t num_ram_banks = 64; // 512 KB default
 
@@ -404,6 +404,9 @@ usage_keymap()
 	exit(1);
 }
 
+void init_scripting();
+void load_script(const char* fname);
+
 int
 main(int argc, char **argv)
 {
@@ -423,6 +426,8 @@ main(int argc, char **argv)
 
 	run_after_load = false;
 
+	init_scripting();
+
 	char *base_path = SDL_GetBasePath();
 
 	// This causes the emulator to load ROM data from the executable's directory when
@@ -434,7 +439,16 @@ main(int argc, char **argv)
 	argv++;
 
 	while (argc > 0) {
-		if (!strcmp(argv[0], "-rom")) {
+        if (!strcmp(argv[0], "-lua")) {
+			argc--;
+			argv++;
+			if (!argc || argv[0][0] == '-') {
+				usage();
+			}
+			load_script(argv[0]);
+			argc--;
+			argv++;
+		} else if (!strcmp(argv[0], "-rom")) {
 			argc--;
 			argv++;
 			if (!argc || argv[0][0] == '-') {
@@ -954,13 +968,13 @@ emulator_loop(void *param)
 		instruction_counter++;
 
 		if (new_frame) {
-            static int frames = 0;
-            frames++;
+			static int frames = 0;
+			frames++;
 
-			if(benchmark_frames > 0) {
-				if(frames == benchmark_frames) {
+			if (benchmark_frames > 0) {
+				if (frames == benchmark_frames) {
 					int t = SDL_GetTicks() - startTime;
-					printf("Ran %d frames for %dms = %d%% speed\n", benchmark_frames, t, (100000/60)*benchmark_frames/t);
+					printf("Ran %d frames for %dms = %d%% speed\n", benchmark_frames, t, (100000 / 60) * benchmark_frames / t);
 					exit(0);
 				}
 
